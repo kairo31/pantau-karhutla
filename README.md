@@ -1,9 +1,9 @@
 # 🔥 Pantau Karhutla
 **Kapan asap reda?** Pantauan titik panas Indonesia, perbandingan tahun ke tahun, dan prediksi akhir musim kebakaran, diperbarui otomatis setiap hari.
 
-🌐 **Situs:** <https://domain-anda.id>
+🌐 **Situs:** <https://domain->
 
-![tangkapan layar](docs/screenshot.png)
+![tangkapan layar](docs/)
 
 ## Apa yang bisa dilihat
 - **Peta** titik panas 1, 3, dan 7 hari terakhir (NASA FIRMS, VIIRS 375 m).
