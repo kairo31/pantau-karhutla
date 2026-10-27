@@ -1,30 +1,34 @@
-# Pantauan Karhutla
+# 🔥 Pantau Karhutla
+**Kapan asap reda?** Pantauan titik panas Indonesia, perbandingan tahun ke tahun, dan prediksi akhir musim kebakaran, diperbarui otomatis setiap hari.
 
-Situs interaktif titik panas dan kebakaran hutan/lahan Indonesia: peta terbaru, perbandingan tahun ke tahun,
-prediksi akhir musim, prakiraan bulanan, hujan dan ENSO. Data diperbarui otomatis tiap hari lewat GitHub Actions.
+🌐 **Situs:** <https://domain-anda.id>
 
-## Pasang (sekali saja)
-1. Buat repo GitHub baru, unggah seluruh isi folder ini.
-2. Minta MAP_KEY gratis di https://firms.modaps.eosdis.nasa.gov/api/map_key/ lalu simpan di
-   **Settings → Secrets and variables → Actions → New repository secret** dengan nama `FIRMS_MAP_KEY`.
-3. **Settings → Pages → Source: GitHub Actions**.
-4. **Actions → Update data dan deploy → Run workflow** (centang *backtest* untuk run pertama).
-5. Domain sendiri: **Settings → Pages → Custom domain**. Di DNS, buat CNAME `www` → `<user>.github.io`
-   (untuk apex pakai record A ke IP GitHub Pages). Aktifkan *Enforce HTTPS*.
+![tangkapan layar](docs/screenshot.png)
 
-## Yang berjalan tiap hari (03:30 UTC)
-`update_firms.py` (NASA FIRMS, 7 hari terakhir; Minggu menyegarkan data final SP) → `update_rain.py` (CHIRPS v3) →
-`update_enso.py` (Niño 3.4, DMI) → `predict.py` (prediksi akhir musim) → `forecast_monthly.py` (prakiraan bulanan) →
-`build_data.py` (JSON untuk situs) → commit data → deploy. Backtest dihitung tiap Minggu atau bila dipilih manual.
+## Apa yang bisa dilihat
+- **Peta** titik panas 1, 3, dan 7 hari terakhir (NASA FIRMS, VIIRS 375 m).
+- **Bandingkan tahun:** musim ini dibanding 2012 sampai sekarang, per wilayah (Kalimantan, Sumatera, Papua, dan lainnya).
+- **Prediksi akhir musim:** peluang rata-rata 14 hari turun di bawah ambang 1.000 atau 500 titik/hari.
+- **Prakiraan bulanan** (eksperimental) 1–6 bulan ke depan.
+- **Hujan dan ENSO/IOD:** kenapa 2026 begitu parah dan apa hubungannya dengan kemarau.
 
-Lokal: `pip install -r requirements.txt`, `pytest -q`, lalu `python -m http.server -d docs`.
+## Temuan utama
+- Keparahan musim sangat terkait ENSO (korelasi peringkat ≈ 0,83) dan hujan Agustus–September.
+- 2026 mencatat Agustus–September terkering sepanjang data untuk Kalimantan dan Papua.
+- Waktu berakhirnya musim jauh lebih sulit diprediksi daripada keparahannya.
 
-## Batasan yang perlu diketahui
-- Alur ke FIRMS, CHIRPS (dhis2eo), dan NOAA PSL **belum diuji langsung** dari lingkungan pengembangan; tes (`pytest`) memakai server palsu.
-  Jika satu langkah gagal, langkah lain tetap jalan (hujan dan ENSO bersifat non-fatal) dan situs memakai data terakhir yang ada.
-- GitHub menonaktifkan workflow terjadwal setelah 60 hari repo tanpa aktivitas; commit data harian biasanya mencegah ini.
-- Data NRT beberapa hari terakhir bersifat sementara. Indeks Niño/DMI terbit dengan jeda; nilai terakhir dipakai ulang (dilaporkan di situs).
-- Prediksi akhir musim: regresi logistik, dilatih dari belasan musim; 2026 berada di tepi rentang data latih.
-- Prakiraan bulanan (RF + Ridge): eksperimental. Pada bulan puncak model menaksir **jauh terlalu rendah** (rasio prediksi/aktual ≈ 0,2–0,7
-  pada backtest). Untuk bulan berjalan, pakai proyeksi laju harian di situs.
-- Wilayah memakai kotak koordinat kasar, bukan batas administrasi. Bukan prakiraan resmi; ikuti BMKG/KLHK.
+## Cara kerja
+GitHub Actions berjalan setiap hari (03:30 UTC):
+NASA FIRMS → CHIRPS (hujan) → NOAA (Niño 3.4, DMI) → model → JSON → GitHub Pages.
+
+## Pasang sendiri
+1. Fork atau unggah repo ini.
+2. Simpan secret `FIRMS_MAP_KEY` (gratis di https://firms.modaps.eosdis.nasa.gov/api/map_key/).
+3. Settings → Pages → Source: **GitHub Actions**; Actions → Read and write permissions.
+4. Actions → *Update data dan deploy* → Run workflow.
+
+## Batasan
+Bukan prakiraan resmi; untuk keputusan operasional ikuti BMKG dan KLHK. Titik panas bukan luas lahan terbakar. Model dilatih dari belasan musim dan 2026 berada di tepi data latih; prakiraan bulanan cenderung terlalu rendah di bulan puncak. Wilayah memakai kotak koordinat kasar.
+
+## Sumber data
+NASA FIRMS · CHIRPS v3 (UCSB CHC) · NOAA PSL · peta © OpenStreetMap.
