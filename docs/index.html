@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pantauan Karhutla Indonesia</title>
+<meta name="description" content="Titik panas VIIRS harian, perbandingan antar tahun, hujan, ENSO, dan perkiraan akhir musim kebakaran di Indonesia.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="#ringkasan">Pantauan Karhutla</a>
+    <nav aria-label="Bagian">
+      <a href="#ringkasan">Ringkasan</a><a href="#peta">Peta</a><a href="#bandingkan">Bandingkan</a>
+      <a href="#prediksi">Prediksi</a><a href="#bulanan">Bulanan</a><a href="#hujan">Hujan dan ENSO</a>
+    </nav>
+    <div class="ctl">
+      <label for="reg" class="sr">Wilayah</label>
+      <select id="reg" aria-label="Wilayah"></select>
+      <button id="theme" type="button" aria-label="Ganti tema terang/gelap">Tema</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="ringkasan" class="hero">
+    <div class="hero-banner">
+      <h1>Titik Panas dan Musim Kebakaran di Indonesia</h1>
+      <div id="status" class="status" role="status">Memuat data…</div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <h2 class="sec">Musim ini dibanding tahun-tahun lalu</h2>
+    <div class="card">
+      <div id="p-overview" class="plot"></div></div>
+  </section>
+
+  <section id="peta">
+    <h2 class="sec">Peta titik panas terbaru</h2>
+    <div class="card">
+      <div class="row">
+        <label>Periode <select id="map-days"><option value="1">1 hari terakhir</option><option value="3">3 hari terakhir</option><option value="7" selected>7 hari terakhir</option></select></label>
+        <label>Ukuran/warna <select id="map-metric"><option value="n">Jumlah titik</option><option value="f">FRP (MW)</option></select></label>
+        <span class="muted" id="map-info"></span>
+      </div>
+      <div id="map" role="application" aria-label="Peta titik panas"></div>
+      <div class="legend" id="map-legend"></div>
+      <div class="map-ranking">
+        <div class="ranking-head"><h3>Wilayah terparah</h3><span id="rank-period"></span></div>
+        <div id="map-ranking" class="ranking-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="bandingkan">
+    <h2 class="sec">Bandingkan tahun ke tahun</h2>
+    <div class="card">
+      <div class="row">
+        <label>Ukuran <select id="cmp-metric">
+          <option value="sm">Rata-rata 14 hari (titik/hari)</option>
+          <option value="cum">Kumulatif sejak awal periode (titik)</option>
+          <option value="frp">Rata-rata FRP 14 hari (MW/hari)</option></select></label>
+        <label>Rentang <select id="cmp-range"><option value="jul">Jul–Des</option><option value="all">Jan–Des</option></select></label>
+        <label class="inline"><input type="checkbox" id="cmp-band" checked> Tampilkan rentang 10–90%</label>
+      </div>
+      <div class="chips" id="chips" role="group" aria-label="Pilih tahun"></div>
+      <div class="row small">
+        <button type="button" data-preset="worst">3 tahun terburuk</button>
+        <button type="button" data-preset="last5">5 tahun terakhir</button>
+        <button type="button" data-preset="all">Semua</button>
+        <button type="button" data-preset="none">Kosongkan</button>
+      </div>
+      <div id="p-cmp" class="plot tall"></div>
+    </div>
+    <div class="two">
+      <div class="panel"><h2 class="sec">Total sampai tanggal yang sama</h2><div class="card">
+        <p class="sub" id="bar-sub"></p><div id="p-bar" class="plot sm"></div></div></div>
+      <div class="panel"><h2 class="sec">Ringkasan tiap musim</h2><div class="card">
+        <div class="tw"><table id="tbl"></table></div></div></div>
+    </div>
+  </section>
+
+  <section id="prediksi">
+    <h2 class="sec">Prediksi akhir musim (nasional)</h2>
+    <div class="card">
+      <div class="row">
+        <label>“Berakhir” berarti <select id="pr-th"></select></label>
+        <label>Model <select id="pr-model"></select></label>
+        <label class="inline"><input type="checkbox" id="pr-all"> Bandingkan semua model</label>
+      </div>
+      <div id="pred-msg" class="msg" hidden></div>
+      <div class="kpis small" id="pred-kpis"></div>
+        <div id="p-pred" class="plot"></div>
+      </div>
+      <div class="two">
+        <div class="panel"><h2 class="sec">Tahun-tahun serupa</h2><div class="card">
+          <div class="tw"><table id="tbl-ana"></table></div></div></div>
+    </div>
+    <h2 class="sec">Bagaimana perkiraan berubah dari hari ke hari</h2>
+    <div class="card">
+      <div id="p-hist" class="plot sm"></div></div>
+    <div class="warn"><b>Cara membaca dengan hati-hati.</b> Model dilatih dari hanya belasan musim, dan musim berat seperti 2026 berada di tepi data latih (hanya 2015 yang lebih tinggi), sehingga ketidakpastian sebenarnya lebih lebar dari pita di atas. Ini bukan prakiraan resmi; untuk keputusan operasional ikuti BMKG dan KLHK.</div>
+  </section>
+
+  <section id="bulanan">
+    <h2 class="sec">Prakiraan bulanan <span class="tag">Eksperimental</span></h2>
+    <div class="card">
+      <p class="sub" id="mo-lead"></p>
+      <div class="row">
+        <label>Wilayah <select id="mo-reg"></select></label>
+        <label class="inline"><input type="checkbox" id="mo-both" checked> Tampilkan kedua model</label>
+      </div>
+      <div class="kpis small" id="mo-kpis"></div>
+      <div id="p-mo" class="plot"></div>
+      <p class="note" id="mo-note"></p>
+    </div>
+  </section>
+
+  <section id="hujan">
+    <h2 class="sec">Hujan dan ENSO</h2>
+    <div class="two">
+      <div class="panel"><h2 class="sec">Hujan kumulatif sejak 1 September</h2><div class="card">
+        <div id="p-rcum" class="plot sm"></div></div></div>
+      <div class="panel"><h2 class="sec">Hujan dan keparahan</h2><div class="card">
+        <div id="p-rsc" class="plot sm"></div></div></div>
+    </div>
+    <h2 class="sec">Niño 3.4 dan DMI (IOD)</h2>
+    <div class="card">
+      <div id="p-enso" class="plot sm"></div></div>
+  </section>
+
+</main>
+<footer class="sources">Sumber: <a href="https://firms.modaps.eosdis.nasa.gov/">NASA FIRMS</a> · <a href="https://www.chc.ucsb.edu/data/chirps3">CHIRPS v3</a> · <a href="https://psl.noaa.gov/data/timeseries/month/">NOAA PSL</a> · peta © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a></footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+pandas>=2.2
+numpy>=1.26
+scikit-learn>=1.4
+requests>=2.31
+xarray>=2024.1
+rioxarray>=0.15
+dhis2eo==1.2.1
