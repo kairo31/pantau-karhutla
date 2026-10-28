@@ -52,7 +52,7 @@ def test_fetch_range_chunks(monkeypatch):
     calls = []
     monkeypatch.setattr(uf.requests, "get", fake_get_factory(calls))
     df = uf.fetch_range("KEY", uf.SOURCE_NRT, date(2026, 1, 1), date(2026, 1, 23))
-    assert [c[2] for c in calls] == [6, 6, 6, 5]                     # 23 hari -> 6+6+6+5
+    assert [c[2] for c in calls] == [5, 5, 5, 5, 3]                  # 23 hari -> 5+5+5+5+3
     assert df.acq_date.nunique() == 23
 
 
@@ -60,12 +60,12 @@ def test_fetch_range_chunks_7_days(monkeypatch):
     calls = []
     monkeypatch.setattr(uf.requests, "get", fake_get_factory(calls))
     uf.fetch_range("KEY", uf.SOURCE_NRT, date(2026, 1, 1), date(2026, 1, 7))
-    assert [c[2] for c in calls] == [6, 1]                            # 7 hari -> 6+1
+    assert [c[2] for c in calls] == [5, 2]                            # 7 hari -> 5+2
 
 
 def test_fetch_rejects_ndays_above_max():
-    with pytest.raises(ValueError, match="ndays harus 1-6"):
-        uf.fetch("KEY", uf.SOURCE_NRT, date(2026, 1, 1), 7)
+    with pytest.raises(ValueError, match="ndays harus 1-5"):
+        uf.fetch("KEY", uf.SOURCE_NRT, date(2026, 1, 1), 6)
 
 
 def test_main_updates_daily(tmp_path, monkeypatch):
