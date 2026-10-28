@@ -16,12 +16,12 @@ API = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
 SOURCE_NRT = "VIIRS_SNPP_NRT"
 SOURCE_SP = "VIIRS_SNPP_SP"
 GRID = 0.1
-MAX_DAYS_PER_REQUEST = 6
+MAX_DAYS_PER_REQUEST = 5
 EMPTY_COLS = ["latitude", "longitude", "acq_date", "confidence", "frp"]
 
 
 def fetch(key: str, source: str, start: date, ndays: int, retries: int = 3) -> pd.DataFrame:
-    """Satu panggilan API: ndays (1-6) hari mulai `start`."""
+    """Satu panggilan API: ndays (1-5) hari mulai `start`."""
     if not 1 <= ndays <= MAX_DAYS_PER_REQUEST:
         raise ValueError(f"ndays harus 1-{MAX_DAYS_PER_REQUEST}, dapat {ndays}")
     url = f"{API}/{key}/{source}/{AREA}/{ndays}/{start:%Y-%m-%d}"
@@ -50,7 +50,7 @@ def fetch(key: str, source: str, start: date, ndays: int, retries: int = 3) -> p
 def fetch_range(key, source, start: date, end: date) -> pd.DataFrame:
     frames, d = [], start
     while d <= end:
-        # Maksimum 6 hari per request agar rentang 7 hari dipecah jadi 6+1.
+        # Maksimum 5 hari per request agar sesuai batas FIRMS Area API.
         n = min(MAX_DAYS_PER_REQUEST, (end - d).days + 1)
         frames.append(fetch(key, source, d, n))
         d += timedelta(days=n)
