@@ -16,13 +16,17 @@ API = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
 SOURCE_NRT = "VIIRS_SNPP_NRT"
 SOURCE_SP = "VIIRS_SNPP_SP"
 GRID = 0.1
+MAX_DAYS_PER_REQUEST = 6
 EMPTY_COLS = ["latitude", "longitude", "acq_date", "confidence", "frp"]
 
 
 def fetch(key: str, source: str, start: date, ndays: int, retries: int = 3) -> pd.DataFrame:
-    """Satu panggilan API: ndays (1-10) hari mulai `start`."""
+    """Satu panggilan API: ndays (1-6) hari mulai `start`."""
+    if not 1 <= ndays <= MAX_DAYS_PER_REQUEST:
+        raise ValueError(f"ndays harus 1-{MAX_DAYS_PER_REQUEST}, dapat {ndays}")
     url = f"{API}/{key}/{source}/{AREA}/{ndays}/{start:%Y-%m-%d}"
     last = None
+    last_detail = ""
     for i in range(retries):
         try:
             r = requests.get(url, timeout=180)
@@ -32,19 +36,22 @@ def fetch(key: str, source: str, start: date, ndays: int, retries: int = 3) -> p
                 return pd.read_csv(io.StringIO(text))
             if r.status_code == 200 and not text.strip():
                 return pd.DataFrame(columns=EMPTY_COLS)      # tidak ada data pada rentang itu
-            snippet = text[:120].replace(key, "***")
+            snippet = text[:240].replace(key, "***")
+            last_detail = snippet
             print(f"  percobaan {i+1}: HTTP {r.status_code} {snippet!r}", file=sys.stderr)
         except requests.RequestException as e:
             last = type(e).__name__
             print(f"  percobaan {i+1}: {last}", file=sys.stderr)
         time.sleep(5 * (i + 1))
-    raise RuntimeError(f"FIRMS gagal untuk {start} (+{ndays} hari), status terakhir: {last}")
+    detail = f", respons: {last_detail!r}" if last_detail else ""
+    raise RuntimeError(f"FIRMS gagal untuk {start} (+{ndays} hari), status terakhir: {last}{detail}")
 
 
 def fetch_range(key, source, start: date, end: date) -> pd.DataFrame:
     frames, d = [], start
     while d <= end:
-        n = min(10, (end - d).days + 1)
+        # Maksimum 6 hari per request agar rentang 7 hari dipecah jadi 6+1.
+        n = min(MAX_DAYS_PER_REQUEST, (end - d).days + 1)
         frames.append(fetch(key, source, d, n))
         d += timedelta(days=n)
     frames = [f for f in frames if len(f)]
