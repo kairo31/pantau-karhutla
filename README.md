@@ -3,7 +3,6 @@
 
 🌐 **Situs:** <[https://domain-](https://kairo31.github.io/pantau-karhutla/)>
 
-![tangkapan layar](docs/)
 
 ## Apa yang bisa dilihat
 - **Peta** titik panas 1, 3, dan 7 hari terakhir (NASA FIRMS, VIIRS 375 m).
